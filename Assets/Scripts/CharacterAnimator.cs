@@ -8,16 +8,16 @@ namespace Project
     [RequireComponent(typeof(Animator))]
     public class CharacterAnimator : MonoBehaviour
     {
-        public BaseInput input;
+        [SerializeField] private BaseController controller;
 
         private readonly int f_speed_forward = Animator.StringToHash("f_speed_forward");
         private readonly int f_speed_right = Animator.StringToHash("f_speed_right");
 
         private Animator animator;
 
-        private void OnEnable() => input.OnInputMovement += OnMovement;
+        private void OnEnable() => controller.OnInputMovement += OnMovement;
 
-        private void OnDisable() => input.OnInputMovement -= OnMovement;
+        private void OnDisable() => controller.OnInputMovement -= OnMovement;
 
         private void Start()
         {
