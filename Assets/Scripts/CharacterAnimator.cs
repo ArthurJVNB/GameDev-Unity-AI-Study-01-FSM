@@ -24,10 +24,10 @@ namespace Project
             animator = GetComponent<Animator>();
         }
 
-        private void OnMovement(Vector2 input)
+        private void OnMovement(Vector3 input)
         {
             animator.SetFloat(f_speed_right, input.x);
-            animator.SetFloat(f_speed_forward, input.y);
+            animator.SetFloat(f_speed_forward, input.z);
         }
     }
 }

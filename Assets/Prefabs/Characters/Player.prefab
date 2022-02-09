@@ -1403,6 +1403,13 @@ MonoBehaviour:
   runSpeed: 4.5
   sprintSpeed: 6.3
   movementState: 2
+  stanceState: 0
+  weaponState: 0
+  cameraTarget: {fileID: 1029933022}
+  freeLookSensitivity: 12
+  aimLookSensitivityMultiplier: 0.5
+  invertVerticalLook: 0
+  invertHorizontalLook: 0
 --- !u!1 &5051807020296020290
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,15 +6,22 @@ namespace Project
 {
     public abstract class BaseController : MonoBehaviour
     {
-        public Action<Vector2> OnInputMovement;
+        public Action<Vector3> OnInputMovement;
 
+        [Header("Movement")]
         [SerializeField] protected float acceleration = 5f;
         [SerializeField] protected float walkSpeed = 1.2f;
         [SerializeField] protected float runSpeed = 4.5f;
         [SerializeField] protected float sprintSpeed = 6.3f;
+
+        [Header("Stances")]
         [SerializeField] protected MovementState movementState = defaultMovementState;
+        [SerializeField] protected StanceState stanceState = defaultStanceState;
+        [SerializeField] protected WeaponState weaponState = defaultWeaponState;
 
         protected const MovementState defaultMovementState = MovementState.Run;
+        protected const StanceState defaultStanceState = StanceState.Stand;
+        protected const WeaponState defaultWeaponState = WeaponState.Away;
         protected MovementState previousMovementState = defaultMovementState;
 
         #region States
