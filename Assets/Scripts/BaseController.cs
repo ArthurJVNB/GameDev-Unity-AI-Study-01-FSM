@@ -6,7 +6,8 @@ namespace Project
 {
     public abstract class BaseController : MonoBehaviour
     {
-        public Action<Vector3> OnInputMovement;
+        public Action<Vector3> OnMovement;
+        public Action<bool> OnGroundedChanged;
 
         [Header("Movement")]
         [SerializeField] protected float acceleration = 5f;

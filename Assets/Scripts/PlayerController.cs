@@ -8,11 +8,15 @@ namespace Project
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : BaseController
     {
+        [SerializeField] private LayerMask groundLayers = 1;
+
         [Header("Camera")]
         [SerializeField] private Transform cameraTarget;
         [SerializeField] private float freeLookSensitivity = 12;
         [Range(0.1f, 1f)]
         [SerializeField] private float aimLookSensitivityMultiplier = .5f;
+        [Tooltip("LayerMasks that are valid for aiming")]
+        [SerializeField] private LayerMask aimLayerMask = 1;
 
         [Space(10)]
         [SerializeField] private float TopClamp = 80f;
@@ -29,19 +33,22 @@ namespace Project
         private bool isSprinting;
         private Vector2 inputMovement;
         private Vector2 inputLook;
-        private Vector2 lastMovement;
-        private float minMovement;
-        
+        private Vector3 lastMovement;
+
+        private bool IsGrounded { get { return controller.isGrounded; } }
+
+
         // Camera
         private float cameraTargetEulerYaw; // Camera rotation on X Axis
         private float cameraTargetEulerPitch; // Camera rotation on Y Axis
 
-        private bool IsGrounded { get { return Physics.Raycast(transform.position, Vector3.down, .3f); } }
+
+        //private bool IsGrounded { get { return Physics.Raycast(transform.position, Vector3.down, .3f); } }
+        //private bool IsGrounded { get { return Physics.CheckSphere(transform.position, controller.radius, groundLayers, QueryTriggerInteraction.Ignore); } }
 
         private void Start()
         {
             controller = GetComponent<CharacterController>();
-            minMovement = controller.minMoveDistance;
         }
 
         private void Update()
@@ -92,12 +99,16 @@ namespace Project
                     break;
             }
 
+            //const float minInput = 0.001f;
+            //if (Mathf.Abs(inputLook.x) < minInput) inputLook.x = 0;
+            //if (Mathf.Abs(inputLook.y) < minInput) inputLook.y = 0;
+
             cameraTargetEulerYaw += (invertVerticalLook ? inputLook.y : -inputLook.y) * 1 * lookSensitivity;
             cameraTargetEulerYaw = Mathf.Clamp(cameraTargetEulerYaw, BottomClamp, TopClamp);
 
             cameraTargetEulerPitch += (invertHorizontalLook ? -inputLook.x : inputLook.x) * 1 * lookSensitivity;
 
-            cameraTarget.rotation = Quaternion.Euler(cameraTargetEulerYaw, cameraTargetEulerPitch, 0);
+            cameraTarget.localRotation = Quaternion.Euler(cameraTargetEulerYaw, cameraTargetEulerPitch, 0);
             
             //cameraTarget.rotation *= Quaternion.AngleAxis(inputLook.x * lookSensitivity, Vector3.up);
         }
@@ -106,42 +117,41 @@ namespace Project
         {
             float targetSpeed;
 
-            switch (movementState)
+            // note from unity's third person template: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+            if (inputMovement == Vector2.zero)
+                targetSpeed = 0;
+            else
             {
-                case MovementState.Walk:
-                    targetSpeed = walkSpeed;
-                    break;
-                case MovementState.Run:
-                    targetSpeed = runSpeed;
-                    break;
-                case MovementState.Sprint:
-                    targetSpeed = sprintSpeed;
-                    break;
-                case MovementState.Locked:
-                    targetSpeed = 0;
-                    break;
-                default:
-                    targetSpeed = 0;
-                    break;
+                switch (movementState)
+                {
+                    case MovementState.Walk:
+                        targetSpeed = walkSpeed;
+                        break;
+                    case MovementState.Run:
+                        targetSpeed = runSpeed;
+                        break;
+                    case MovementState.Sprint:
+                        targetSpeed = sprintSpeed;
+                        break;
+                    case MovementState.Locked:
+                        targetSpeed = 0;
+                        break;
+                    default:
+                        targetSpeed = 0;
+                        break;
+                }
             }
 
             Vector2 targetMovement = Vector2.ClampMagnitude(inputMovement * targetSpeed, targetSpeed);
-            Vector2 movement = Vector2.Lerp(lastMovement, targetMovement, acceleration * Time.fixedDeltaTime);
-            lastMovement = movement;
+            Vector2 lerpMovement = Vector2.Lerp(lastMovement, targetMovement, acceleration * Time.fixedDeltaTime);
+            lastMovement = lerpMovement;
 
+            Vector3 movement = new Vector3(lerpMovement.x, Physics.gravity.y, lerpMovement.y);
 
-            Vector3 finalMovement = new Vector3(movement.x, IsGrounded ? 0 : Physics.gravity.y, movement.y);
+            controller.Move(movement * Time.fixedDeltaTime);
 
-            if (finalMovement.magnitude > minMovement)
-            {
-                controller.Move(finalMovement * Time.fixedDeltaTime);
-            }
-            else
-            {
-                finalMovement = Vector3.zero;
-            }
-
-            OnInputMovement?.Invoke(finalMovement);
+            OnMovement?.Invoke(controller.velocity);
+            OnGroundedChanged?.Invoke(IsGrounded);
         }
 
         private void HandleStates()

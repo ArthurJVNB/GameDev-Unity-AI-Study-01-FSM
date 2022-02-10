@@ -1405,9 +1405,14 @@ MonoBehaviour:
   movementState: 2
   stanceState: 0
   weaponState: 0
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 1
   cameraTarget: {fileID: 1029933022}
   freeLookSensitivity: 12
   aimLookSensitivityMultiplier: 0.5
+  TopClamp: 80
+  BottomClamp: -80
   invertVerticalLook: 0
   invertHorizontalLook: 0
 --- !u!1 &5051807020296020290
